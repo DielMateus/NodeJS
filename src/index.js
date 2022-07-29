@@ -1,59 +1,42 @@
-const { response } = require("express");
+const { request, response } = require("express");
 const express = require("express");
+
+const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 
-app.use(express.json());/*Para que funcione uma requisição do tipo JSON devemos utilizar o MIDDWARE  */
+app.use(express.json()); /*Para que funcione uma requisição do tipo JSON devemos utilizar o MIDDWARE  */
 
-/*
-app.get("/", (request, response) => {
-// return response.send("Hello Wordl!"); não é muito utilizado o send, então vamos usar o json(que pode retornar array e afins...)
-    return response.json({
-        message: "Hello Wordl Ignite  - Fundamentos NodeJS!" });
-});
-
-*/
-
-/*
-*Tipos de Parâmetros
+const customers = [];
+/** 
+* cpf - string
+* name - string
+* id - uuid
+* statement - []
 *
-* Route Params => Identificar um recurso editar/deletar/buscar
-* Query Params => Paginação / Filtro
-* Body Params => Os objetos inserção/alteração (JSON)
-*/
+* Primeiro requisito: Deve ser possível criar uma conta */
+app.post("/account", (request, response) => {
+    const { cpf, name } = request.body;
 
+    const customerAlreadyExists = customers.some( /*O método some() testa se ao menos um dos elementos no array passa no teste implementado pela função atribuída e retorna um valor true ou false. */
+        (customer) => customer.cpf === cpf
+    );
 
-// Aqui estou criando minhas rotas com EXPRESS
-app.get("/courses", (request, response)=> {
-    const query = request.query;
-    console.log(query);
-    return response.json(["Curso 1", "Curso 2", "Curso 3"]);
+    // Verifica se o CPF já existe
+    if (customerAlreadyExists) {
+        return response.status(400).json({ error: "Customer already exists!"});
+    }
+
+    
+    customers.push({
+        cpf,
+        name,
+        id: uuidv4(), /*id randômico */
+        statement: [],
+    });
+
+    return response.status(201).send();
+
 });
-
-app.post("/courses", (request, response)=> {
-    const body = request.body;
-    console.log(body);
-    return response.json(["Curso 1", "Curso 2", "Curso 3", "Curso 4"]);
-});
-
-// app.put("/courses/:id", (request, response)=> {
-//     return response.json(["Curso 6", "Curso 2", "Curso 3", "Curso 4"]);
-// });
-
-app.put("/courses/:id", (request, response)=> {
-    const params = request.params;
-    console.log(params);
-    return response.json(["Curso 6", "Curso 2", "Curso 3", "Curso 4"]);
-});
-
-app.patch("/courses/:id", (request, response)=> {
-    return response.json(["Curso 9", "Curso 2", "Curso 3", "Curso 4"]);
-});
-
-app.delete("/courses/:id", (request, response)=> {
-    return response.json(["Curso 8", "Curso 2", "Curso 3", "Curso 4"]);
-});
-
-
 
 app.listen(3333);
